@@ -1,16 +1,15 @@
 from app.domain.models import UserHealthData, HealthSummary
+from app.domain.scoring_engine import calculate_base_score
+from app.domain.risk_rules import evaluate_risk
 
 def calculate_health_score(user_data: UserHealthData) -> HealthSummary:
     """
-    Domain 层核心业务逻辑
+    现在只做整合调度
     """
 
-    score = (user_data.sleep_hours * 10) + (user_data.steps_walked // 1000) * 5
+    score = calculate_base_score(user_data)
 
-    if score > 100:
-        score = 100
-
-    message = "健康评分良好" if score > 70 else "健康评分较差"
+    message = evaluate_risk(score)
 
     return HealthSummary(
         score=score,
