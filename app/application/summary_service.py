@@ -1,12 +1,13 @@
 from app.domain.models import UserHealthData
 from app.domain.health_decision import calculate_health_score
 from app.infrastructure.repository import HealthRepository
-
+from app.external.llm_service import LLMService
 
 class SummaryService:
 
-    def __init__(self, repository: HealthRepository):
+    def __init__(self, repository: HealthRepository, llm_service: LLMService):
         self.repository = repository
+        self.llm_service = llm_service
 
     def generate_summary(self, user_data_input):
 
@@ -17,11 +18,18 @@ class SummaryService:
 
         result = calculate_health_score(domain_data)
 
+        # 调用 LLM 生成报告
+        report = self.llm_service.generate_report(
+            result.score,
+            result.message
+        )
+
         self.repository.save(result)
 
         return {
             "health_score": result.score,
-            "message": result.message
+            "message": result.message,
+            "report": report
         }
 
     def get_history(self):
