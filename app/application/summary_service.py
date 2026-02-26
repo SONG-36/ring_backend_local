@@ -1,5 +1,9 @@
 from app.domain.models import UserHealthData
 from app.domain.health_decision import calculate_health_score
+from app.infrastructure.in_memory_repo import InMemoryHealthRepository
+
+# 创建全局内存仓库实例（开发阶段）
+repository = InMemoryHealthRepository()
 
 def generate_summary(user_data_input):
     """
@@ -18,8 +22,22 @@ def generate_summary(user_data_input):
     # 调用 Domain
     result = calculate_health_score(domain_data)
 
+    # 保存记录
+    repository.save(result)
+
     # Domain → JSON
     return {
         "health_score": result.score,
         "message": result.message
     }
+
+def get_history():
+    history = repository.get_all()
+
+    return [
+        {
+            "health_score": item.score,
+            "message": item.message
+        }
+        for item in history
+    ]
