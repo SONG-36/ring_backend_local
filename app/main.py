@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes_summary import router as summary_router
+
+from app.api.routes_summary import router as summary_router, set_service
+from app.infrastructure.in_memory_repo import InMemoryHealthRepository
+from app.infrastructure.logging_repo import LoggingHealthRepository
+from app.application.summary_service import SummaryService
 
 app = FastAPI()
 
-# 允许前端访问（开发阶段）
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,7 +16,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 注册路由
+# 创建具体实现
+#repository = InMemoryHealthRepository()
+repository = LoggingHealthRepository()
+
+# 注入到 Application
+service = SummaryService(repository)
+
+# 注入到 API
+set_service(service)
+
 app.include_router(summary_router)
 
 @app.get("/health")

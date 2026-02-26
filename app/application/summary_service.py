@@ -1,43 +1,36 @@
 from app.domain.models import UserHealthData
 from app.domain.health_decision import calculate_health_score
-from app.infrastructure.in_memory_repo import InMemoryHealthRepository
+from app.infrastructure.repository import HealthRepository
 
-# 创建全局内存仓库实例（开发阶段）
-repository = InMemoryHealthRepository()
 
-def generate_summary(user_data_input):
-    """
-    Application 层：
-    - 把 API DTO 转换成 Domain Model
-    - 调用 Domain
-    - 把 Domain 结果转成 JSON
-    """
+class SummaryService:
 
-    # DTO → Domain Model
-    domain_data = UserHealthData(
-        sleep_hours=user_data_input.sleep_hours,
-        steps_walked=user_data_input.steps_walked
-    )
+    def __init__(self, repository: HealthRepository):
+        self.repository = repository
 
-    # 调用 Domain
-    result = calculate_health_score(domain_data)
+    def generate_summary(self, user_data_input):
 
-    # 保存记录
-    repository.save(result)
+        domain_data = UserHealthData(
+            sleep_hours=user_data_input.sleep_hours,
+            steps_walked=user_data_input.steps_walked
+        )
 
-    # Domain → JSON
-    return {
-        "health_score": result.score,
-        "message": result.message
-    }
+        result = calculate_health_score(domain_data)
 
-def get_history():
-    history = repository.get_all()
+        self.repository.save(result)
 
-    return [
-        {
-            "health_score": item.score,
-            "message": item.message
+        return {
+            "health_score": result.score,
+            "message": result.message
         }
-        for item in history
-    ]
+
+    def get_history(self):
+        history = self.repository.get_all()
+
+        return [
+            {
+                "health_score": item.score,
+                "message": item.message
+            }
+            for item in history
+        ]
