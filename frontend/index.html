@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>健康评分系统</title>
+</head>
+<body>
+    <h1>健康评分输入</h1>
+
+    <form id="healthForm">
+        <label>睡眠时间（小时）：</label>
+        <input type="number" id="sleepHours" required><br><br>
+
+        <label>步数：</label>
+        <input type="number" id="stepsWalked" required><br><br>
+
+        <button type="submit">提交</button>
+    </form>
+
+    <h2>结果：</h2>
+    <p id="result">等待输入...</p>
+
+    <script>
+        document.getElementById("healthForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const sleepHours = Number(document.getElementById("sleepHours").value);
+            const stepsWalked = Number(document.getElementById("stepsWalked").value);
+
+            const response = await fetch("http://127.0.0.1:8000/summary", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    sleep_hours: sleepHours,
+                    steps_walked: stepsWalked
+                })
+            });
+
+            const data = await response.json();
+
+            document.getElementById("result").innerText =
+                "健康评分：" + data.health_score + " - " + data.message;
+        });
+    </script>
+</body>
+</html>
