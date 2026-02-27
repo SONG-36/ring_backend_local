@@ -21,28 +21,37 @@
     <p id="result">等待输入...</p>
 
     <script>
-        document.getElementById("healthForm").addEventListener("submit", async function(event) {
-            event.preventDefault();
+    document.getElementById("healthForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
 
-            const sleepHours = Number(document.getElementById("sleepHours").value);
-            const stepsWalked = Number(document.getElementById("stepsWalked").value);
+        const sleepHours = Number(document.getElementById("sleepHours").value);
+        const stepsWalked = Number(document.getElementById("stepsWalked").value);
 
-            const response = await fetch("http://127.0.0.1:8000/summary", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    sleep_hours: sleepHours,
-                    steps_walked: stepsWalked
-                })
-            });
-
-            const data = await response.json();
-
-            document.getElementById("result").innerText =
-                "健康评分：" + data.data.health_score + " - " + data.data.message;
+        try {
+        const resp = await fetch("http://127.0.0.1:8000/summary", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ sleep_hours: sleepHours, steps_walked: stepsWalked })
         });
+
+        const payload = await resp.json();
+
+        // 关键：失败分支要显示 fail.message
+        if (!resp.ok || payload.code !== 0) {
+            document.getElementById("result").innerText =
+            `错误：${payload.message || "请求失败"}`;
+            return;
+        }
+
+        // 成功分支：从 payload.data 取业务数据
+        const data = payload.data;
+        document.getElementById("result").innerText =
+            `健康评分：${data.health_score} - ${data.message}`;
+
+        } catch (e) {
+        document.getElementById("result").innerText = `网络错误：${String(e)}`;
+        }
+    });
     </script>
 </body>
 </html>

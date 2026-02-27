@@ -2,6 +2,7 @@ from app.domain.models import UserHealthData
 from app.domain.health_decision import calculate_health_score
 from app.infrastructure.repository import HealthRepository
 from app.external.llm_service import LLMService
+from app.utils.response import AppError
 
 class SummaryService:
 
@@ -10,6 +11,9 @@ class SummaryService:
         self.llm_service = llm_service
 
     def generate_summary(self, user_data_input):
+
+        if user_data_input.sleep_hours < 0:
+            raise AppError(code=4001, message="睡眠时间不能为负数", http_status=400)
 
         domain_data = UserHealthData(
             sleep_hours=user_data_input.sleep_hours,
