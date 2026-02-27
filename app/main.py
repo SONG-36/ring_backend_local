@@ -11,8 +11,12 @@ from app.utils.response import success
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from app.utils.response import success, fail, AppError
+from app.core.logger import setup_logging
+import logging
 
 app = FastAPI()
+setup_logging()
+logger = logging.getLogger(__name__)
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,7 +28,7 @@ app.add_middleware(
 
 # 创建具体实现
 repository = InMemoryHealthRepository()
-#repository = LoggingHealthRepository()
+repository = LoggingHealthRepository()
 llm_service = FakeLLMService()
 
 # 注入到 Application
@@ -52,6 +56,7 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
 # 未知异常兜底
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.error("Unhandled error", exc_info=True)
     return JSONResponse(
         status_code=500,
         content=fail(code=5000, message="系统错误，请稍后再试"),
