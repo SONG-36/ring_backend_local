@@ -41,7 +41,7 @@
             const data = await response.json();
 
             document.getElementById("result").innerText =
-                "健康评分：" + data.health_score + " - " + data.message;
+                "健康评分：" + data.data.health_score + " - " + data.data.message;
         });
     </script>
 </body>
