@@ -1,8 +1,9 @@
 import logging
-
+from app.core.settings import get_settings
 
 def setup_logging():
+    settings = get_settings()
     logging.basicConfig(
-        level=logging.INFO,
+        level=settings.LOG_LEVEL,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
